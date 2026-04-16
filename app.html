@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lizzy McAlpine Mood Quiz</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            background: linear-gradient(to bottom, #f8ede3, #dfd3c3);
+            color: #4e342e;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: rgba(255, 248, 240, 0.95);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            color: #7f5539;
+        }
+
+        p {
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.6;
+        }
+
+        .question {
+            margin-top: 30px;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .answers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background-color: #b08968;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #9c6644;
+            transform: scale(1.03);
+        }
+
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #ede0d4;
+            border-radius: 12px;
+            display: none;
+        }
+
+        #restartBtn {
+            margin-top: 20px;
+            background-color: #7f5539;
+        }
+
+        #restartBtn:hover {
+            background-color: #5e3d2b;
+        }
+
+        .nav-link {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            color: white;
+            background-color: #7f5539;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .nav-link:hover {
+            background-color: #5e3d2b;
+        }
+
+        .progress {
+            margin-top: 10px;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #6d4c41;
+        }
+
+        @media (max-width: 650px) {
+            .answers {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lizzy McAlpine Mood Quiz</h1>
+        <p>
+            Answer a few questions and find out which music mood fits you best.
+        </p>
+        <div class="progress" id="progressText">Question 1 of 5</div>
+
+        <div id="quiz">
+            <div class="question" id="questionText"></div>
+            <div class="answers" id="answerButtons"></div>
+        </div>
+
+        <div id="result">
+            <h2>Your Music Mood:</h2>
+            <h3 id="resultTitle"></h3>
+            <p id="resultDescription"></p>
+            <button id="restartBtn">Take Quiz Again</button>
+        </div>
+
+        <a href="scratch.html" class="nav-link">Back to Scratch Page</a>
+    </div>
+
+  <script>
+    const questions = [
+      {
+        question: "What sounds best to you right now?",
+        answers: [
+          { text: "A quiet late-night drive", mood: "reflective" },
+          { text: "A soft acoustic song", mood: "calm" },
+          { text: "A song that makes me feel everything", mood: "emotional" },
+          { text: "Something warm and comforting", mood: "dreamy" }
+        ]
+      },
+      {
+        question: "Pick a setting:",
+        answers: [
+          { text: "Rain on the window", mood: "reflective" },
+          { text: "A cozy bedroom", mood: "calm" },
+          { text: "Walking alone at sunset", mood: "emotional" },
+          { text: "Golden light in the morning", mood: "dreamy" }
+        ]
+      },
+      {
+        question: "What kind of music do you connect with most?",
+        answers: [
+          { text: "Thoughtful and honest", mood: "reflective" },
+          { text: "Gentle and peaceful", mood: "calm" },
+          { text: "Deep and emotional", mood: "emotional" },
+          { text: "Soft and beautiful", mood: "dreamy" }
+        ]
+      },
+      {
+        question: "Which word fits your vibe best?",
+        answers: [
+          { text: "Introspective", mood: "reflective" },
+          { text: "Peaceful", mood: "calm" },
+          { text: "Heartfelt", mood: "emotional" },
+          { text: "Romantic", mood: "dreamy" }
+        ]
+      },
+      {
+        question: "What do you want music to do for you?",
+        answers: [
+          { text: "Help me think", mood: "reflective" },
+          { text: "Help me relax", mood: "calm" },
+          { text: "Help me feel understood", mood: "emotional" },
+          { text: "Help me escape a little", mood: "dreamy" }
+        ]
+      }
+    ];
+
+    let currentQuestion = 0;
+    let scores = {
+      reflective: 0,
+      calm: 0,
+      emotional: 0,
+      dreamy: 0
+    };
+
+    const questionText = document.getElementById("questionText");
+    const answerButtons = document.getElementById("answerButtons");
+    const resultBox = document.getElementById("result");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultDescription = document.getElementById("resultDescription");
+    const restartBtn = document.getElementById("restartBtn");
+    const quiz = document.getElementById("quiz");
+    const progressText = document.getElementById("progressText");
+
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      questionText.textContent = q.question;
+      answerButtons.innerHTML = "";
+      progressText.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+
+      q.answers.forEach(answer => {
+        const btn = document.createElement("button");
+        btn.textContent = answer.text;
+        btn.addEventListener("click", () => selectAnswer(answer.mood));
+        answerButtons.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(mood) {
+      scores[mood]++;
+      currentQuestion++;
+
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      quiz.style.display = "none";
+      resultBox.style.display = "block";
+      progressText.style.display = "none";
+
+      let topMood = "reflective";
+      for (let mood in scores) {
+        if (scores[mood] > scores[topMood]) {
+          topMood = mood;
+        }
+      }
+
+      const results = {
+        reflective: {
+          title: "Reflective Mood",
+          description: "You connect most with thoughtful, personal music. You probably like songs that feel honest, quiet, and real."
+        },
+        calm: {
+          title: "Calm Mood",
+          description: "You enjoy soft, peaceful music that helps you relax. Your vibe is gentle, comforting, and easygoing."
+        },
+        emotional: {
+          title: "Emotional Mood",
+          description: "You love music that says something real and makes you feel deeply. You connect strongly with heartfelt songs."
+        },
+        dreamy: {
+          title: "Dreamy Mood",
+          description: "You like music that feels warm, beautiful, and a little magical. You enjoy songs that create a soft atmosphere."
+        }
+      };
+
+      resultTitle.textContent = results[topMood].title;
+      resultDescription.textContent = results[topMood].description;
+    }
+
+    restartBtn.addEventListener("click", () => {
+      currentQuestion = 0;
+      scores = {
+        reflective: 0,
+        calm: 0,
+        emotional: 0,
+        dreamy: 0
+      };
+
+      quiz.style.display = "block";
+      resultBox.style.display = "none";
+      progressText.style.display = "block";
+      showQuestion();
+    });
+
+    showQuestion();
+  </script>
+    
+</body>
+</html>
